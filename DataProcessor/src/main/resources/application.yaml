@@ -1,0 +1,3 @@
+app:
+  textFile: "asdt"   # Path to the text file
+  shardSize: 3                            # Shard size for splitting the text
