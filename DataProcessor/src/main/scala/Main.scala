@@ -9,8 +9,8 @@ object Main extends App {
   val shardSize = appConfig("shardSize").toString.toInt
   val embeddingDim = appConfig("embeddingDim").toString.toInt
 
-  val dataProcessor = new DataProcessor(textFile, shardSize)
-  val tokenizedSentences = dataProcessor.processFile()
+  val dataProcessor = new DataProcessor("This is some test data", shardSize)
+  val tokenizedSentences = dataProcessor.processData()
 
   val totalTokens = tokenizedSentences.map(_.size()).sum // Total number of tokens
   val tokenizedArray = new Array[Array[Int]](totalTokens) // Create the array with the total number of tokens
@@ -40,12 +40,6 @@ object Main extends App {
 
   val embeddings = modelTrainer.getEmbeddings
   println("Learned Embeddings:\n" + embeddings)
-
-  dataProcessor.vocabulary.foreachEntry((s, i) => {
-    println(s + " " + i)
-  })
-
-  println()
 
   dataProcessor.vocabFrequency.foreachEntry((s, i) => {
     println(s + " " + i)
