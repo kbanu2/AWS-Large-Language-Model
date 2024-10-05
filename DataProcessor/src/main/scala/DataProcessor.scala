@@ -1,6 +1,4 @@
-import com.knuddels.jtokkit.Encodings
 import com.knuddels.jtokkit.api.{Encoding, EncodingType, IntArrayList}
-
 import java.io.{BufferedReader, FileReader}
 import java.util
 import scala.collection.mutable
@@ -17,7 +15,6 @@ class DataProcessor(filePath: String, shardSize: Int) {
     val bufferedReader = new BufferedReader(new FileReader(filePath))
     bufferedReader.lines().iterator()
   }
-
 
   // Process the file by reading, splitting into shards, and tokenizing
   def processFile(): Seq[IntArrayList] = {
@@ -71,23 +68,5 @@ class DataProcessor(filePath: String, shardSize: Int) {
       decodedTokens.mkString(" ")
     }
   }
-//
-//  // Handle special tokens like [CLS] and [SEP] if needed
-//  def addSpecialTokens(tokens: IntArrayList): IntArrayList = {
-//    val clsToken = encoding.encode("[CLS]").get(0)
-//    val sepToken = encoding.encode("[SEP]").get(0)
-//
-//    // Create a new IntArrayList to store tokens with special tokens added
-//    val updatedTokens = new IntArrayList()
-//    updatedTokens.add(clsToken)
-//
-//    // Reasoning for using a for loop is that the Jtokkit IntArrayList does not seem to implement any iterable functions
-//    for (i <- 0 to tokens.size()){
-//      updatedTokens.add(tokens.get(i))
-//    }
-//
-//    updatedTokens.add(sepToken)
-//    updatedTokens
-//  }
 }
 

@@ -1,0 +1,33 @@
+module TextProcessing {
+  typedef sequence<string> StringList;
+  typedef sequence<double> DoubleList;
+
+  struct WordFrequency {
+    string word;
+    long frequency;
+  };
+
+  struct WordMap {
+    string word;
+    long uid;
+  }
+
+  typedef sequence<WordFrequency> WordFrequencyList;
+  typedef sequence<WordMap> WordMapList;
+
+  struct ProcessingResult {
+    WordFrequencyList wordFrequencies;
+    WordMapList wordMappings;
+    DoubleList vectorEmbedding;
+  };
+
+  interface FileProcessor {
+    ProcessingResult processChunk(in string chunkContent);
+    void writeResults(in ProcessingResult results);
+  };
+
+  interface Controller {
+    void startProcessing(in string filename);
+    void finishProcessing();
+  };
+};
