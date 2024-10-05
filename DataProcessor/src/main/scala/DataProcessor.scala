@@ -3,12 +3,13 @@ import com.knuddels.jtokkit.api.{Encoding, EncodingType, IntArrayList}
 
 import java.io.{BufferedReader, FileReader}
 import java.util
+import scala.collection.mutable
 
 class DataProcessor(filePath: String, shardSize: Int) {
 
   // Create a new EncodingRegistry and get an encoding type
-  private val registry = Encodings.newDefaultEncodingRegistry()
-  private val encoding: Encoding = registry.getEncoding(EncodingType.CL100K_BASE)
+  val vocabulary: mutable.TreeMap[String, Int] = mutable.TreeMap[String, Int]()
+  val vocabFrequency: mutable.Map[String, Int] = mutable.Map[String, Int]()
 
   // Read the large file and return its content as a string
   // This method will handle large files efficiently
@@ -17,21 +18,16 @@ class DataProcessor(filePath: String, shardSize: Int) {
     bufferedReader.lines().iterator()
   }
 
+
   // Process the file by reading, splitting into shards, and tokenizing
   def processFile(): Seq[IntArrayList] = {
-    // Use StringBuilder to handle large text chunks
     val textBuilder = new StringBuilder()
 
-    // Read and append chunks from the file
     readFile().forEachRemaining(line => textBuilder.append(line).append(" "))
 
-    // Convert entire file content into a string for processing
     val textContent = textBuilder.toString()
-
-    // Split the content into shards for parallel processing
     val shards = splitIntoShards(textContent)
 
-    // Convert each shard into numerical tokens
     convertShardsToTokens(shards)
   }
 
@@ -41,35 +37,57 @@ class DataProcessor(filePath: String, shardSize: Int) {
   }
 
   // Convert text shards into numerical tokens
-  def convertShardsToTokens(shards: Seq[String]): Seq[IntArrayList] = {
+  private def convertShardsToTokens(shards: Seq[String]): Seq[IntArrayList] = {
     shards.map { shard =>
-      encoding.encode(shard)  // Encodes each shard into numerical tokens
+      val tokens = shard.split("\\s+")
+      val intArrayList = new IntArrayList()
+
+      tokens.foreach { token =>
+
+        // Add the token to the vocabulary if it does not exist
+        val index = vocabulary.getOrElse(token, {
+          // If the token is not in the vocabulary, add it with a new index
+          val newIndex = vocabulary.size // Current size gives a unique index
+          vocabulary += (token -> newIndex) // Add token to the vocabulary
+          vocabFrequency += (token -> 0)
+          newIndex // Return the new index
+        })
+
+        vocabFrequency(token) += 1
+        intArrayList.add(index) // Add the token's index to the IntArrayList
+      }
+
+      intArrayList
     }
   }
 
   // Decode numerical tokens back to text
   def decodeTokens(tokens: Seq[IntArrayList]): Seq[String] = {
     tokens.map { tokenList =>
-      encoding.decode(tokenList)  // Decodes tokens back into the original text
+      val decodedTokens = (0 until tokenList.size()).map(i => {
+        val tokenIndex = tokenList.get(i)
+        vocabulary.find(_._2 == tokenIndex).map(_._1).getOrElse("[UNK]")
+      })
+      decodedTokens.mkString(" ")
     }
   }
-
-  // Handle special tokens like [CLS] and [SEP] if needed
-  def addSpecialTokens(tokens: IntArrayList): IntArrayList = {
-    val clsToken = encoding.encode("[CLS]").get(0)
-    val sepToken = encoding.encode("[SEP]").get(0)
-
-    // Create a new IntArrayList to store tokens with special tokens added
-    val updatedTokens = new IntArrayList()
-    updatedTokens.add(clsToken)
-
-    // Reasoning for using a for loop is that the Jtokkit IntArrayList does not seem to implement any iterable functions
-    for (i <- 0 to tokens.size()){
-      updatedTokens.add(tokens.get(i))
-    }
-
-    updatedTokens.add(sepToken)
-    updatedTokens
-  }
+//
+//  // Handle special tokens like [CLS] and [SEP] if needed
+//  def addSpecialTokens(tokens: IntArrayList): IntArrayList = {
+//    val clsToken = encoding.encode("[CLS]").get(0)
+//    val sepToken = encoding.encode("[SEP]").get(0)
+//
+//    // Create a new IntArrayList to store tokens with special tokens added
+//    val updatedTokens = new IntArrayList()
+//    updatedTokens.add(clsToken)
+//
+//    // Reasoning for using a for loop is that the Jtokkit IntArrayList does not seem to implement any iterable functions
+//    for (i <- 0 to tokens.size()){
+//      updatedTokens.add(tokens.get(i))
+//    }
+//
+//    updatedTokens.add(sepToken)
+//    updatedTokens
+//  }
 }
 
