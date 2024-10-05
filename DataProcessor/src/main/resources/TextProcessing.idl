@@ -10,7 +10,7 @@ module TextProcessing {
   struct WordMap {
     string word;
     long uid;
-  }
+  };
 
   typedef sequence<WordFrequency> WordFrequencyList;
   typedef sequence<WordMap> WordMapList;

@@ -12,5 +12,6 @@ lazy val root = (project in file("."))
     libraryDependencies += "org.deeplearning4j" % "deeplearning4j-nlp" % "1.0.0-M1.1",
     libraryDependencies += "org.deeplearning4j" % "deeplearning4j-core" % "1.0.0-M1.1",
     libraryDependencies += "org.nd4j" % "nd4j-native" % "1.0.0-M2.1",
-      libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.6"
+    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.6",
+    libraryDependencies += "org.jacorb" % "jacorb" % "3.9"
   )
