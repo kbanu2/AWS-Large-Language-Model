@@ -1,14 +1,42 @@
 import com.knuddels.jtokkit.Encodings
 import com.knuddels.jtokkit.api.{Encoding, EncodingType, IntArrayList}
 
-class DataProcessor(text: String, shardSize: Int) {
+import java.io.{BufferedReader, FileReader}
+import java.util
+
+class DataProcessor(filePath: String, shardSize: Int) {
 
   // Create a new EncodingRegistry and get an encoding type
   private val registry = Encodings.newDefaultEncodingRegistry()
   private val encoding: Encoding = registry.getEncoding(EncodingType.CL100K_BASE)
 
+  // Read the large file and return its content as a string
+  // This method will handle large files efficiently
+  def readFile(): util.Iterator[String] = {
+    val bufferedReader = new BufferedReader(new FileReader(filePath))
+    bufferedReader.lines().iterator()
+  }
+
+  // Process the file by reading, splitting into shards, and tokenizing
+  def processFile(): Seq[IntArrayList] = {
+    // Use StringBuilder to handle large text chunks
+    val textBuilder = new StringBuilder()
+
+    // Read and append chunks from the file
+    readFile().forEachRemaining(line => textBuilder.append(line).append(" "))
+
+    // Convert entire file content into a string for processing
+    val textContent = textBuilder.toString()
+
+    // Split the content into shards for parallel processing
+    val shards = splitIntoShards(textContent)
+
+    // Convert each shard into numerical tokens
+    convertShardsToTokens(shards)
+  }
+
   // Split the text into shards for parallel processing
-  def splitIntoShards(): Seq[String] = {
+  def splitIntoShards(text: String): Seq[String] = {
     text.split("\\s+").grouped(shardSize).map(_.mkString(" ")).toSeq
   }
 
