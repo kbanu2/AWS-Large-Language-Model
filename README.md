@@ -1,3 +1,5 @@
+# Krenar Banushi kbanu2@uic.edu CS 441 Homework 1 Textbook Group 2 #
+
 # Overview #
 The DataProcessor project is designed to process text data, tokenize it, and generate embeddings using neural networks. This project is built using Scala for data processing and C++ for performance-critical tasks. The project employs deep learning libraries such as Deeplearning4j for building and training models, along with omniORB for communication in a distributed system.
 
