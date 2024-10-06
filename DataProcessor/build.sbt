@@ -4,42 +4,17 @@ ThisBuild / scalaVersion := "2.13.15"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "DataProcessor",
-    libraryDependencies += "com.knuddels" % "jtokkit" % "1.1.0",
-    resolvers += "jitpack" at "https://jitpack.io",
-    libraryDependencies += "org.yaml" % "snakeyaml" % "2.0",
-    libraryDependencies += "org.deeplearning4j" % "deeplearning4j-core" % "1.0.0-M2.1",
-    libraryDependencies += "org.deeplearning4j" % "deeplearning4j-nlp" % "1.0.0-M1.1",
-    libraryDependencies += "org.deeplearning4j" % "deeplearning4j-core" % "1.0.0-M1.1",
-    libraryDependencies += "org.nd4j" % "nd4j-native" % "1.0.0-M2.1",
-    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.6",
-    libraryDependencies += "org.jacorb" % "jacorb" % "3.9"
+      name := "DataProcessor",
+      libraryDependencies ++= Seq(
+          "com.knuddels" % "jtokkit" % "1.1.0",
+          "org.yaml" % "snakeyaml" % "2.0",
+          "org.deeplearning4j" % "deeplearning4j-core" % "1.0.0-M2.1",
+          "org.deeplearning4j" % "deeplearning4j-nlp" % "1.0.0-M1.1",
+          "org.nd4j" % "nd4j-native" % "1.0.0-M2.1",
+          "ch.qos.logback" % "logback-classic" % "1.5.6",
+          "org.jacorb" % "jacorb" % "3.9",
+          "org.jboss.spec.javax.rmi" % "jboss-rmi-api_1.0_spec" % "1.0.6.Final",
+          "org.scalatest" %% "scalatest" % "3.2.10" % Test
+      ),
+      unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "main" / "resources"
   )
-
-import sbt._
-import sbt.Keys._
-import scala.sys.process._
-
-lazy val compileIDL = taskKey[Unit]("Compile IDL files")
-
-compileIDL := {
-    val idlFile = (baseDirectory.value / "src" / "main" / "resources" / "TextProcessing.idl").getAbsolutePath
-    val jacorbIdlCommand = "jacorb_idl"
-
-    // Check if jacorb_idl command is available
-    val commandCheck = Process(s"which $jacorbIdlCommand").!
-    if (commandCheck == 0) {
-        // Run the jacorb_idl command
-        val result = Process(s"$jacorbIdlCommand $idlFile").!
-        if (result != 0) {
-            throw new RuntimeException("Error compiling IDL file")
-        } else {
-            println("IDL compilation successful.")
-        }
-    } else {
-        throw new RuntimeException(s"$jacorbIdlCommand not found in PATH")
-    }
-}
-
-// Ensure the task runs before compiling Scala sources
-compile in Compile := (compile in Compile).dependsOn(compileIDL).value

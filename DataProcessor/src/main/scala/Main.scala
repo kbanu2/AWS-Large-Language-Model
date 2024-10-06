@@ -1,47 +1,28 @@
-import org.nd4j.linalg.factory.Nd4j
-import org.nd4j.linalg.api.ndarray.INDArray
+import org.omg.CORBA._
+import org.omg.PortableServer._
+import TextProcessing._
+import org.omg.CosNaming.{NameComponent, NamingContextHelper}
 
 object Main extends App {
-  val configLoader = new ConfigLoader("DataProcessor/src/main/resources/application.yaml")
-  val appConfig = configLoader.appConfig
+  val orb = ORB.init(args, null)
 
-  val textFile = appConfig("textFile").toString
-  val shardSize = appConfig("shardSize").toString.toInt
-  val embeddingDim = appConfig("embeddingDim").toString.toInt
+  // Create and register the POA
+  val poa = POAHelper.narrow(orb.resolve_initial_references("RootPOA"))
+  poa.the_POAManager.activate()
 
-  val dataProcessor = new DataProcessor("This is some test data", shardSize)
-  val tokenizedSentences = dataProcessor.processData()
+  // Create an instance of your servant
+  val fileProcessor = new FileProcessorImpl() // Implement this class
+  val fileProcessorId = poa.activate_object(fileProcessor)
 
-  val totalTokens = tokenizedSentences.map(_.size()).sum // Total number of tokens
-  val tokenizedArray = new Array[Array[Int]](totalTokens) // Create the array with the total number of tokens
-  val labelsArray = new Array[Array[Int]](totalTokens)
+  // Get the object reference
+  val fileProcessorRef = poa.servant_to_reference(fileProcessor)
 
-  var index = 0 // Index to track the position in tokenizedArray
-  for (i <- tokenizedSentences.indices) {
-    for (j <- 0 until tokenizedSentences(i).size()) {
-      tokenizedArray(index) = Array(tokenizedSentences(i).get(j)) // Create a new array for each token
-      index += 1 // Increment the index for the next position
-    }
-  }
+  // Convert the reference to IOR string
+  val ior = orb.object_to_string(fileProcessorRef)
+  println(s"IOR: $ior") // Output the IOR string
 
-  for (i <- tokenizedArray.indices){
-    if (i < tokenizedArray.length - 1)
-      labelsArray(i) = tokenizedArray(i + 1)
-    else
-      labelsArray(i) = Array(0)
-  }
 
-  val inputFeatures: INDArray = Nd4j.create(tokenizedArray)
-  val outputLabels: INDArray = Nd4j.create(labelsArray)
-  val vocabSize = dataProcessor.vocabulary.size // Total number of unique tokens in your vocabulary (e.g., 1-9, plus 0 for padding)
-
-  val modelTrainer = new ModelTrainer(vocabSize, embeddingDim, inputFeatures, outputLabels)
-  modelTrainer.train()
-
-  val embeddings = modelTrainer.getEmbeddings
-  println("Learned Embeddings:\n" + embeddings)
-
-  dataProcessor.vocabFrequency.foreachEntry((s, i) => {
-    println(s + " " + i)
-  })
+  // Start listening for incoming requests
+  println("Server is running...")
+  orb.run()
 }
