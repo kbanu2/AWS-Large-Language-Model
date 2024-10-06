@@ -3,6 +3,22 @@
 # Overview #
 The DataProcessor project is designed to process text data, tokenize it, and generate embeddings using neural networks. This project is built using Scala for data processing and C++ for performance-critical tasks. The project employs deep learning libraries such as Deeplearning4j for building and training models, along with omniORB for communication in a distributed system.
 
+# Build and Runtime Process for CORBA Framework #
+The DataProcessor project utilizes the omniORB CORBA framework for communication between distributed components written in C++ and Scala. Below is a step-by-step guide on how to build and run the CORBA components in this project.
+
+## Prerequisites
+Ensure that you have the following installed:
+
+omniORB: This is a high-performance implementation of the CORBA specification, available on various platforms. You can download it from omniORB's official site.
+### Building CORBA Components:
+Create IDL (Interface Definition Language) files that define the interfaces for the services that your C++ components will expose. 
+
+### Compile IDL Files
+Use the omniORB IDL compiler (omniidl) to compile the IDL files into C++ and Scala code. This will generate the necessary skeleton and stub files.
+
+### Build the C++ Components
+Navigate to the C++ source directory and compile the generated code along with your implementation files. Make sure to link against the omniORB libraries.
+
 ## Features ##
 Configuration Loading: Load configurations from a YAML file.
 Text Processing: Split and tokenize text data into manageable chunks.
